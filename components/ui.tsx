@@ -66,7 +66,7 @@ export function ErrorBanner({ error, onDismiss, onSettings, onRetry }: {
     <div role="alert" className="rise flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border border-accent/40 bg-accent/10 px-4 py-3 text-sm">
       <span className="min-w-0 flex-1 basis-60">{e.message}</span>
       {e.kind === "balance" && e.link && (
-        <a className="btn btn-primary" href={e.link} target="_blank" rel="noreferrer">Add credit</a>
+        <a className="btn btn-primary" href={e.link} target="_blank" rel="noreferrer">{e.link.includes("/claim/") ? "Sign in with publik" : "Add credit"}</a>
       )}
       {(e.kind === "balance" || e.kind === "auth" || e.kind === "no_key" || e.kind === "consent") && (
         <button className="btn" onClick={onSettings}>{e.kind === "balance" ? "Use my own key" : "Open settings"}</button>
