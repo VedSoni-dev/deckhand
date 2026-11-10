@@ -1,36 +1,45 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Deckhand
 
-## Getting Started
+A free, open-source AI deck maker. Type a topic or paste your notes, fix the outline, and watch a designed slide deck write itself one card at a time. A free alternative to Gamma.
 
-First, run the development server:
+- **No credits, no watermark, no sign-up.** Decks are saved in your browser.
+- **Real PowerPoint export.** Titles, bullets, cards and charts are native, editable objects, not pictures of slides.
+- **Twelve layouts, eight themes.** Stats, timelines, comparisons, charts, quotes. Restyle the whole deck in one click.
+- **Edit anything.** Click any text to change it, switch a slide's layout, or ask the AI to rewrite one slide.
+- **Share by link.** The whole deck is packed into the URL; nothing is uploaded.
+- **Bring any model.** publik API (no key to paste), your own OpenAI or Anthropic key, or any OpenAI-compatible endpoint such as OpenRouter or Ollama.
+
+## Run it
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000, click **Set up AI**, and paste an OpenAI or Anthropic API key. Own keys stay in your browser and go straight to the provider; they never touch the server.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+To offer publik API to your visitors, copy `.env.example` to `.env.local` and set `PUBLIK_APP_TOKEN`.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run build && npm start            # production
+npm run build && PUBLIK_SELF_TEST=1 npm start   # prove the publik wiring, then exit
+```
 
-## Learn More
+## How it works
 
-To learn more about Next.js, take a look at the following resources:
+1. **Outline.** The model plans the deck as one JSON object per line: a title and a one-sentence gist for each slide. You edit the plan before anything is built.
+2. **Slides.** The model writes each slide as one line of JSON, choosing from twelve layout shapes. A tolerant line parser renders every slide the moment its line completes, so cards appear while the rest is still being written.
+3. **Render.** Slides are drawn on a fixed 1280×720 canvas from theme tokens, so restyling never touches content and print, present and export all match.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Slide JSON is normalised before it is drawn (`lib/parse.ts`), so a weaker model's sloppy output still produces a valid deck.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Limits, honestly
 
-## Deploy on Vercel
+- No images yet: artwork is generative and drawn from the theme.
+- No accounts or collaboration. Decks live in one browser unless you share a link or export.
+- PowerPoint export uses system fonts, so type differs slightly from the web view.
+- The model can be wrong. The prompts forbid invented statistics, but check any number before you present it.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Stack
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Next.js (App Router), TypeScript, Tailwind, pptxgenjs. MIT licensed.
