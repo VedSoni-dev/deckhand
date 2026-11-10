@@ -162,7 +162,7 @@ input:focus-visible, textarea:focus-visible { outline: none; }
 .sl-bar-row { display: grid; grid-template-columns: 250px 1fr 150px; align-items: center; gap: 22px; }
 .sl-bar-l { font-size: 23px; line-height: 1.2; text-align: right; }
 .sl-bar-track { height: 46px; background: var(--s-surface); border-radius: 6px; overflow: hidden; }
-.sl-bar-fill { height: 100%; background: var(--s-accent); border-radius: 6px; transition: width 0.5s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.sl-bar-fill { height: 100%; background: var(--s-accent); border-radius: 6px; }
 .sl-bar-v { font-family: var(--s-heading); font-size: 32px; font-weight: 600; }
 
 .sl-edit { outline: none; border-radius: 6px; cursor: text; transition: box-shadow 0.12s; min-width: 1ch; }
@@ -170,6 +170,69 @@ input:focus-visible, textarea:focus-visible { outline: none; }
 .sl-edit:focus { box-shadow: 0 0 0 2px var(--s-accent); }
 .sl-inv .sl-edit:focus { box-shadow: 0 0 0 2px var(--s-bg); }
 .sl-edit:empty::before { content: attr(data-ph); opacity: 0.35; }
+
+/* ---------- depth, the big-number layout, percent meters ---------- */
+.sl:not(.sl-inv) { background-image: radial-gradient(900px 520px at 108% -12%, color-mix(in srgb, var(--s-accent) 13%, transparent), transparent 62%), radial-gradient(700px 420px at -10% 112%, color-mix(in srgb, var(--s-accent2) 9%, transparent), transparent 60%); }
+.sl-inv { background-image: radial-gradient(900px 600px at 105% 110%, color-mix(in srgb, var(--s-bg) 18%, transparent), transparent 60%); }
+.sl-hero { font-family: var(--s-heading); font-size: 230px; line-height: 0.92; font-weight: 600; letter-spacing: -0.045em; color: var(--s-accent); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.sl-hero-t { font-family: var(--s-heading); font-size: 44px; line-height: 1.1; font-weight: 600; margin-top: 26px; max-width: 780px; text-wrap: balance; }
+.sl-hero ~ .sl-sub { margin-top: 16px; font-size: 26px; }
+.sl-stat-v, .sl-bar-v { font-variant-numeric: tabular-nums; }
+.sl-meter { height: 8px; border-radius: 4px; background: var(--s-surface); margin-top: 18px; overflow: hidden; }
+.sl-meter-fill { height: 100%; border-radius: 4px; background: var(--s-accent); transform-origin: left; }
+.sl-bar-fill { transform-origin: left; }
+.sl-tick::before { transform-origin: left; }
+
+/* ---------- motion: a slide's entrance, played in present mode and as a card is written ---------- */
+@keyframes sl-up { from { opacity: 0; transform: translateY(26px); filter: blur(6px); } to { opacity: 1; transform: none; filter: none; } }
+@keyframes sl-pop { from { opacity: 0; transform: translateY(22px) scale(0.96); } to { opacity: 1; transform: none; } }
+@keyframes sl-grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes sl-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes sl-art-in { from { opacity: 0; transform: scale(1.08); } to { opacity: 1; transform: none; } }
+@keyframes sl-drift { from { transform: translate3d(0, 0, 0) scale(1); } to { transform: translate3d(-14px, 10px, 0) scale(1.035); } }
+@keyframes sl-side-in { from { transform: translateX(100%); } to { transform: none; } }
+.sl-play { --ease: cubic-bezier(0.2, 0.8, 0.2, 1); }
+.sl-play .sl-h, .sl-play .sl-kicker, .sl-play .sl-mark, .sl-play .sl-quote, .sl-play .sl-hero { animation: sl-up 0.7s var(--ease) both; animation-delay: calc(var(--t0, 0ms) + 80ms); }
+.sl-play .sl-quote { animation-delay: calc(var(--t0, 0ms) + 200ms); }
+.sl-play .sl-sub, .sl-play .sl-cap, .sl-play .sl-by, .sl-play .sl-hero-t { animation: sl-up 0.7s var(--ease) both; animation-delay: calc(var(--t0, 0ms) + 240ms); }
+.sl-play .sl-hero ~ .sl-sub { animation-delay: calc(var(--t0, 0ms) + 380ms); }
+.sl-play .sl-bar { transform-origin: left; animation: sl-grow 0.6s var(--ease) both; animation-delay: var(--t0, 0ms); }
+.sl-play .sl-in { animation: sl-pop 0.6s var(--ease) both; animation-delay: calc(var(--t0, 0ms) + 300ms + var(--i, 0) * 95ms); }
+.sl-play .sl-bar-fill, .sl-play .sl-meter-fill { animation: sl-grow 0.9s var(--ease) both; animation-delay: calc(var(--t0, 0ms) + 420ms + var(--i, 0) * 95ms); }
+.sl-play .sl-tick::before { animation: sl-grow 0.7s var(--ease) both; animation-delay: calc(var(--t0, 0ms) + 300ms + var(--i, 0) * 95ms); }
+.sl-play .sl-side { animation: sl-side-in 0.7s var(--ease) both; animation-delay: var(--t0, 0ms); }
+.sl-play .sl-art { animation: sl-art-in 1.2s var(--ease) both, sl-drift 14s ease-in-out 1.2s infinite alternate; animation-delay: var(--t0, 0ms), calc(var(--t0, 0ms) + 1.2s); }
+.sl-play .sl-foot { animation: sl-fade 0.8s both; animation-delay: calc(var(--t0, 0ms) + 500ms); }
+
+/* ---------- motion: slide-to-slide transitions. --d is 1 going forward, -1 going back ---------- */
+.stage { position: relative; width: 1280px; height: 720px; overflow: hidden; background: #000; }
+.tr-layer { position: absolute; inset: 0; }
+.tr-out { z-index: 1; pointer-events: none; }
+.tr-in { z-index: 2; }
+@keyframes tr-fade-in { from { opacity: 0; } }
+@keyframes tr-fade-out { to { opacity: 0; } }
+@keyframes tr-slide-in { from { transform: translateX(calc(var(--d, 1) * 100%)); } }
+@keyframes tr-slide-out { to { transform: translateX(calc(var(--d, 1) * -28%)); opacity: 0.2; } }
+@keyframes tr-zoom-in { from { opacity: 0; transform: scale(0.9); } }
+@keyframes tr-zoom-out { to { opacity: 0; transform: scale(1.14); } }
+@keyframes tr-show { 0%, 49.9% { visibility: hidden; } 50%, 100% { visibility: visible; } }
+@keyframes tr-hide { 0%, 49.9% { visibility: visible; } 50%, 100% { visibility: hidden; } }
+@keyframes tr-curtain { 0% { transform: translateX(calc(var(--d, 1) * 101%)); } 42%, 58% { transform: none; } 100% { transform: translateX(calc(var(--d, 1) * -101%)); } }
+.tr-fade .tr-in { animation: tr-fade-in 0.5s ease both; }
+.tr-fade .tr-out { animation: tr-fade-out 0.5s ease both; }
+.tr-slide .tr-in { animation: tr-slide-in 0.7s cubic-bezier(0.7, 0, 0.2, 1) both; }
+.tr-slide .tr-out { animation: tr-slide-out 0.7s cubic-bezier(0.7, 0, 0.2, 1) both; }
+.tr-zoom .tr-in { animation: tr-zoom-in 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.tr-zoom .tr-out { animation: tr-zoom-out 0.6s cubic-bezier(0.4, 0, 1, 1) both; }
+.tr-wipe .tr-in { animation: tr-show 0.9s linear both; }
+.tr-wipe .tr-out { animation: tr-hide 0.9s linear both; }
+.tr-curtain { display: none; position: absolute; inset: 0; z-index: 3; background: var(--s-accent); pointer-events: none; }
+.tr-wipe .tr-curtain.on { display: block; animation: tr-curtain 0.9s cubic-bezier(0.7, 0, 0.2, 1) both; }
+.tr-none .tr-out { display: none; }
+@media (prefers-reduced-motion: reduce) {
+  .sl-play *, .sl-play *::before, .tr-layer, .tr-curtain { animation: none !important; }
+  .tr-out { display: none; }
+}
 
 /* ---------- print: one slide per page, exactly as drawn ---------- */
 .print-only { display: none; }

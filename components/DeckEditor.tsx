@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { convertLayout } from "@/lib/parse";
+import { TRANSITIONS, transitionOf } from "@/lib/motion";
 import { encodeDeck } from "@/lib/share";
 import { themeById, themeVars } from "@/lib/themes";
 import { LAYOUTS, uid, type Deck, type Layout, type Slide } from "@/lib/types";
@@ -90,6 +91,10 @@ export function DeckEditor({ deck, onChange, onBack, generating, progress, onSto
     setToast("Building your PowerPoint…");
     try { (await import("@/lib/exportPptx")).exportPptx(deck); } catch { setToast("PowerPoint export failed. Try PDF instead."); }
   };
+  const html = async () => {
+    try { (await import("@/lib/exportHtml")).exportHtml(deck); setToast("Saved. Open the file in any browser: arrow keys to move, F for full screen."); }
+    catch { setToast("HTML export failed. Try PDF instead."); }
+  };
   const json = () => {
     const a = document.createElement("a");
     a.href = URL.createObjectURL(new Blob([JSON.stringify(deck, null, 2)], { type: "application/json" }));
@@ -119,12 +124,24 @@ export function DeckEditor({ deck, onChange, onBack, generating, progress, onSto
             {readOnly && onCopy && <button className="btn btn-primary" onClick={onCopy}>Make it mine</button>}
             {!readOnly && (
               <Menu label={<><span className="size-3 rounded-full" style={{ background: theme.accent, boxShadow: `0 0 0 2px ${theme.bg}, 0 0 0 3px var(--line)` }} /><span className="hidden sm:inline">Restyle</span></>} title="Change theme">
-                {() => <div className="w-72 p-1.5"><ThemeSwatches compact value={deck.theme} onChange={(id) => onChange({ ...deck, theme: id, updatedAt: Date.now() })} /></div>}
+                {() => (
+                  <div className="w-72 p-1.5">
+                    <ThemeSwatches compact value={deck.theme} onChange={(id) => onChange({ ...deck, theme: id, updatedAt: Date.now() })} />
+                    <div className="mb-1.5 mt-3 text-xs text-mute">Transition between slides</div>
+                    <div className="flex rounded-lg border border-line p-0.5" role="radiogroup" aria-label="Transition">
+                      {TRANSITIONS.map((t) => (
+                        <button key={t} role="radio" aria-checked={transitionOf(deck) === t} onClick={() => onChange({ ...deck, transition: t, updatedAt: Date.now() })}
+                          className={`flex-1 rounded-md px-1 py-1 text-xs capitalize transition ${transitionOf(deck) === t ? "bg-fg text-bg" : "text-mute hover:text-fg"}`}>{t}</button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </Menu>
             )}
             <Menu label="Export">
               {(close) => (
                 <>
+                  <MenuItem onClick={() => { close(); html(); }} hint=".html">Animated web deck, one file</MenuItem>
                   <MenuItem onClick={() => { close(); pptx(); }} hint=".pptx">PowerPoint, fully editable</MenuItem>
                   <MenuItem onClick={() => { close(); setTimeout(() => window.print(), 50); }} hint="print">PDF</MenuItem>
                   <MenuItem onClick={() => { close(); share(); }}>Copy share link</MenuItem>
@@ -181,7 +198,7 @@ export function DeckEditor({ deck, onChange, onBack, generating, progress, onSto
               )}
               <div className={`relative overflow-hidden rounded-xl border shadow-[var(--shadow)] transition ${i === active ? "border-accent/60" : "border-line"}`}>
                 <Scaled theme={theme}>
-                  <SlideView slide={s} theme={theme} index={i} total={Math.max(deck.slides.length, progress?.total ?? 0)} onChange={editable && busySlide !== s.id ? update : undefined} />
+                  <SlideView slide={s} theme={theme} index={i} total={Math.max(deck.slides.length, progress?.total ?? 0)} onChange={editable && busySlide !== s.id ? update : undefined} play={generating} />
                 </Scaled>
                 {busySlide === s.id && <div className="shimmer absolute inset-0 grid place-items-center opacity-80"><span className="pulse rounded-full bg-panel px-3 py-1.5 text-sm">Rewriting…</span></div>}
               </div>
@@ -206,7 +223,7 @@ export function DeckEditor({ deck, onChange, onBack, generating, progress, onSto
       </div>
 
       {toast && <div role="status" className="screen-only rise fixed bottom-5 left-1/2 z-50 w-max max-w-[92vw] -translate-x-1/2 rounded-full border border-line bg-panel px-4 py-2 text-sm shadow-[var(--shadow)]">{toast}</div>}
-      {presenting !== null && deck.slides.length > 0 && <Present slides={deck.slides} theme={theme} start={presenting} onClose={() => setPresenting(null)} />}
+      {presenting !== null && deck.slides.length > 0 && <Present slides={deck.slides} theme={theme} start={presenting} transition={transitionOf(deck)} onClose={() => setPresenting(null)} />}
       {mounted && createPortal(
         <div className="print-only" style={themeVars(theme)}>
           {deck.slides.map((s, i) => <SlideView key={s.id} slide={s} theme={theme} index={i} total={deck.slides.length} />)}

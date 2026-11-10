@@ -11,6 +11,7 @@ export const SAMPLE: Deck = {
   slides: [
     { id: "s1", layout: "title", title: "How to give a talk people remember", subtitle: "Ten minutes, one idea, and a room that leaves repeating it." },
     { id: "s2", layout: "statement", title: "Nobody remembers your slides. They remember one sentence.", text: "So decide what that sentence is before you open any software, and build everything else to carry it." },
+    { id: "s2b", layout: "hero", title: "idea is all a ten-minute talk can carry", text: "Everything else on your slides is there to make that one idea land.", items: [{ value: "1" }] },
     { id: "s3", layout: "cards", title: "Three things every memorable talk has", items: [
       { title: "One idea", text: "A single claim you could say to a friend in a lift." },
       { title: "A reason to care", text: "The cost of not knowing it, shown in the first minute." },

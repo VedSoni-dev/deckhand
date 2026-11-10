@@ -10,11 +10,12 @@ export type Layout =
   | "quote"
   | "statement"
   | "chart"
+  | "hero"
   | "closing";
 
 export const LAYOUTS: Layout[] = [
   "title", "section", "bullets", "cards", "stats", "timeline",
-  "steps", "compare", "quote", "statement", "chart", "closing",
+  "steps", "compare", "quote", "statement", "chart", "hero", "closing",
 ];
 
 export interface Item {
@@ -53,6 +54,7 @@ export interface Deck {
   title: string;
   prompt: string;
   theme: string;
+  transition?: string;
   slides: Slide[];
   createdAt: number;
   updatedAt: number;

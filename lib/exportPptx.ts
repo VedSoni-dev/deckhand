@@ -118,6 +118,12 @@ export async function exportPptx(deck: Deck) {
         text(s.text, { x: px(76), y: px(290), w: px(790), h: px(230), fontFace: H, fontSize: (s.text ?? "").length > 110 ? 28 : 36 });
         text(s.by ? `— ${s.by}` : "", { x: px(76), y: px(540), w: px(790), h: px(40), fontSize: 17, color: hex(t.muted) });
         break;
+      case "hero":
+        rect(920, 0, 360, 720, t.surface);
+        text(items[0]?.value, { x: px(76), y: px(150), w: px(800), h: px(230), fontFace: H, fontSize: 150, bold: true, color: hex(t.accent), valign: "bottom" });
+        text(s.title, { x: px(76), y: px(400), w: px(780), h: px(110), fontFace: H, fontSize: 30, bold: true });
+        text(s.text, { x: px(76), y: px(520), w: px(760), h: px(90), fontSize: 18, color: hex(t.muted) });
+        break;
       case "chart": {
         heading();
         text(s.subtitle, { x: px(76), y: px(150), w: px(1000), h: px(30), fontSize: 14, color: hex(t.muted) });

@@ -4,7 +4,9 @@ A free, open-source AI deck maker. Type a topic or paste your notes, fix the out
 
 - **No credits, no watermark, no sign-up.** Decks are saved in your browser.
 - **Real PowerPoint export.** Titles, bullets, cards and charts are native, editable objects, not pictures of slides.
-- **Twelve layouts, eight themes.** Stats, timelines, comparisons, charts, quotes. Restyle the whole deck in one click.
+- **Thirteen layouts, eight themes.** Stats, timelines, comparisons, charts, quotes, big numbers. Restyle the whole deck in one click.
+- **It moves.** Slides build in with staggered motion, numbers count up, bars grow, and you pick the transition between slides.
+- **Your deck as code.** Export one self-contained, animated `.html` file that plays in any browser.
 - **Edit anything.** Click any text to change it, switch a slide's layout, or ask the AI to rewrite one slide.
 - **Share by link.** The whole deck is packed into the URL; nothing is uploaded.
 - **Bring any model.** publik API (no key to paste), your own OpenAI or Anthropic key, or any OpenAI-compatible endpoint such as OpenRouter or Ollama.
@@ -28,7 +30,7 @@ npm run build && PUBLIK_SELF_TEST=1 npm start   # prove the publik wiring, then 
 ## How it works
 
 1. **Outline.** The model plans the deck as one JSON object per line: a title and a one-sentence gist for each slide. You edit the plan before anything is built.
-2. **Slides.** The model writes each slide as one line of JSON, choosing from twelve layout shapes. A tolerant line parser renders every slide the moment its line completes, so cards appear while the rest is still being written.
+2. **Slides.** The model writes each slide as one line of JSON, choosing from thirteen layout shapes. A tolerant line parser renders every slide the moment its line completes, so cards appear while the rest is still being written.
 3. **Render.** Slides are drawn on a fixed 1280×720 canvas from theme tokens, so restyling never touches content and print, present and export all match.
 
 Slide JSON is normalised before it is drawn (`lib/parse.ts`), so a weaker model's sloppy output still produces a valid deck.

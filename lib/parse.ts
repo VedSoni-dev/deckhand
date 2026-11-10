@@ -120,6 +120,12 @@ export function normalizeSlide(raw: unknown): Slide | null {
       if (!s.text && s.title) { s.text = s.title; delete s.title; }
       if (!s.text) return null;
       break;
+    case "hero": {
+      const v = str(o.value ?? o.number, 16);
+      if (!v) { s.layout = "statement"; break; }
+      s.items = [{ value: v }];
+      break;
+    }
   }
   if (!s.title && !s.text && !s.items?.length && !s.bullets?.length) return null;
   return s;
@@ -152,6 +158,8 @@ export function convertLayout(s: Slide, to: Layout): Slide {
       return { ...base, subtitle: s.subtitle || s.text || lines[0] || "" };
     case "statement":
       return { ...base, text: s.text && s.title ? s.text : s.subtitle || lines[0] || "" };
+    case "hero":
+      return { ...base, text: s.text && s.title ? s.text : s.subtitle || "", items: [{ value: s.items?.find((i) => i.value)?.value || "1" }] };
     case "quote":
       return { id: s.id, layout: to, text: s.text || s.title || lines[0] || "", by: s.by || "", notes: s.notes };
     case "bullets":

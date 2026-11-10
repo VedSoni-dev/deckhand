@@ -57,7 +57,7 @@ export default function App() {
         const d = await decodeDeck(h.slice(3));
         const slides = (d?.slides ?? []).map(normalizeSlide).filter(Boolean) as Slide[];
         if (d && slides.length) {
-          setDeck({ id: uid(), title: d.title, theme: themeById(d.theme).id, slides, prompt: "", createdAt: Date.now(), updatedAt: Date.now() });
+          setDeck({ id: uid(), title: d.title, theme: themeById(d.theme).id, transition: d.transition, slides, prompt: "", createdAt: Date.now(), updatedAt: Date.now() });
           setShared(true); setView("deck");
         } else setError({ e: new Error("That share link is damaged or incomplete, so the deck couldn't be opened.") });
       } else if (h.startsWith("#/d/")) {

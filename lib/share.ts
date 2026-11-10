@@ -18,17 +18,17 @@ async function pipe(data: Uint8Array, stream: CompressionStream | DecompressionS
 
 /** The whole deck lives in the link: nothing is uploaded anywhere. */
 export async function encodeDeck(deck: Deck): Promise<string> {
-  const slim = { t: deck.title, th: deck.theme, s: deck.slides.map(({ id: _id, ...rest }) => (void _id, rest)) };
+  const slim = { t: deck.title, th: deck.theme, tr: deck.transition, s: deck.slides.map(({ id: _id, ...rest }) => (void _id, rest)) };
   const bytes = new TextEncoder().encode(JSON.stringify(slim));
   return b64url(await pipe(bytes, new CompressionStream("deflate-raw")));
 }
 
-export async function decodeDeck(code: string): Promise<Pick<Deck, "title" | "theme" | "slides"> | null> {
+export async function decodeDeck(code: string): Promise<Pick<Deck, "title" | "theme" | "slides" | "transition"> | null> {
   try {
     const bytes = await pipe(unb64url(code), new DecompressionStream("deflate-raw"));
     const o = JSON.parse(new TextDecoder().decode(bytes));
     if (!Array.isArray(o.s)) return null;
-    return { title: String(o.t ?? "Shared deck"), theme: String(o.th ?? "paper"), slides: o.s };
+    return { title: String(o.t ?? "Shared deck"), theme: String(o.th ?? "paper"), transition: typeof o.tr === "string" ? o.tr : undefined, slides: o.s };
   } catch {
     return null;
   }

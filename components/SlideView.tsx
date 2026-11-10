@@ -1,6 +1,7 @@
 "use client";
 
-import { memo } from "react";
+import { memo, useEffect, useRef } from "react";
+import { runCounts } from "@/lib/motion";
 import { num } from "@/lib/parse";
 import type { Theme } from "@/lib/themes";
 import type { Column, Item, Slide } from "@/lib/types";
@@ -8,8 +9,8 @@ import { Art } from "./Art";
 
 type Patch = (p: Partial<Slide>) => void;
 
-function E({ v, on, className, placeholder }: { v?: string; on?: (s: string) => void; className?: string; placeholder?: string }) {
-  if (!on) return v ? <div className={className}>{v}</div> : null;
+function E({ v, on, className, placeholder, count }: { v?: string; on?: (s: string) => void; className?: string; placeholder?: string; count?: boolean }) {
+  if (!on) return v ? <div className={className} data-count={count ? v : undefined}>{v}</div> : null;
   return (
     <div
       className={`${className ?? ""} sl-edit`}
@@ -37,9 +38,20 @@ const size = (text: string | undefined, steps: [number, number][], min: number) 
   return min;
 };
 
-function SlideViewInner({ slide: s, theme, index, total, onChange }: {
+const at = (i: number) => ({ ["--i" as string]: i }) as React.CSSProperties;
+const pct = (v?: string) => { const m = /^\s*(\d+(?:\.\d+)?)\s*%\s*$/.exec(v ?? ""); return m ? Math.min(100, parseFloat(m[1])) : null; };
+
+function SlideViewInner({ slide: s, theme, index, total, onChange, play, lead = 0 }: {
   slide: Slide; theme: Theme; index: number; total: number; onChange?: (s: Slide) => void;
+  /** Run the entrance animation (present mode, a card that was just written). */
+  play?: boolean;
+  /** Milliseconds the entrance waits for a slide transition to clear. */
+  lead?: number;
 }) {
+  const root = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (play && root.current) runCounts(root.current, lead + 250);
+  }, [play, lead, s.id]);
   const patch: Patch | undefined = onChange ? (p) => onChange({ ...s, ...p }) : undefined;
   const set = (k: keyof Slide) => (patch ? (v: string) => patch({ [k]: v }) : undefined);
   const setItem = (i: number, k: keyof Item) =>
@@ -90,7 +102,7 @@ function SlideViewInner({ slide: s, theme, index, total, onChange }: {
       inverted = true;
       body = (
         <>
-          <Art kind={theme.art} seed={seed} x={840} w={440} tone="onAccent" />
+          <Art kind={theme.art === "orbs" ? "rings" : theme.art} seed={seed} x={840} w={440} tone="onAccent" />
           <div className="sl-pad sl-col" style={{ justifyContent: "center", width: 820 }}>
             <E v={s.title} on={set("title")} className="sl-h" placeholder="Closing line" />
             <E v={s.subtitle} on={set("subtitle")} className="sl-sub" placeholder="The ask" />
@@ -108,7 +120,7 @@ function SlideViewInner({ slide: s, theme, index, total, onChange }: {
             <E v={s.title} on={set("title")} className="sl-h sl-h2" placeholder="Title" />
             <div className="sl-bullets" data-n={s.bullets?.length}>
               {(s.bullets ?? []).map((b, i) => (
-                <div className="sl-bullet" key={i}><span className="sl-dot" /><E v={b} on={setBullet(i)} /></div>
+                <div className="sl-bullet sl-in" style={at(i)} key={i}><span className="sl-dot" /><E v={b} on={setBullet(i)} /></div>
               ))}
             </div>
           </div>
@@ -122,7 +134,7 @@ function SlideViewInner({ slide: s, theme, index, total, onChange }: {
           <E v={s.title} on={set("title")} className="sl-h sl-h2" placeholder="Title" />
           <div className="sl-grid" style={{ gridTemplateColumns: `repeat(${items.length === 4 ? 2 : items.length}, 1fr)` }} data-n={items.length}>
             {items.map((it, i) => (
-              <div className="sl-card" key={i}>
+              <div className="sl-card sl-in" style={at(i)} key={i}>
                 <div className="sl-num">{String(i + 1).padStart(2, "0")}</div>
                 <E v={it.title} on={setItem(i, "title")} className="sl-card-t" placeholder="Heading" />
                 <E v={it.text} on={setItem(i, "text")} className="sl-card-p" placeholder="Detail" />
@@ -139,8 +151,9 @@ function SlideViewInner({ slide: s, theme, index, total, onChange }: {
           <E v={s.title} on={set("title")} className="sl-h sl-h2" placeholder="Title" />
           <div className="sl-stats">
             {items.map((it, i) => (
-              <div className="sl-stat" key={i}>
-                <E v={it.value} on={setItem(i, "value")} className="sl-stat-v" placeholder="0" />
+              <div className="sl-stat sl-in" style={at(i)} key={i}>
+                <E v={it.value} on={setItem(i, "value")} className="sl-stat-v" placeholder="0" count />
+                {pct(it.value) !== null && <div className="sl-meter"><div className="sl-meter-fill" style={{ width: `${pct(it.value)}%` }} /></div>}
                 <E v={it.title} on={setItem(i, "title")} className="sl-stat-l" placeholder="Label" />
                 <E v={it.text} on={it.text ? setItem(i, "text") : undefined} className="sl-stat-p" />
               </div>
@@ -156,7 +169,7 @@ function SlideViewInner({ slide: s, theme, index, total, onChange }: {
           <E v={s.title} on={set("title")} className="sl-h sl-h2" placeholder="Title" />
           <div className="sl-time" style={{ gridTemplateColumns: `repeat(${items.length}, 1fr)` }}>
             {items.map((it, i) => (
-              <div className="sl-tick" key={i}>
+              <div className="sl-tick sl-in" style={at(i)} key={i}>
                 <span className="sl-tick-dot" />
                 <E v={it.title} on={setItem(i, "title")} className="sl-tick-t" placeholder="When" />
                 <E v={it.text} on={setItem(i, "text")} className="sl-tick-p" placeholder="What happened" />
@@ -173,7 +186,7 @@ function SlideViewInner({ slide: s, theme, index, total, onChange }: {
           <E v={s.title} on={set("title")} className="sl-h sl-h2" placeholder="Title" />
           <div className="sl-steps" data-n={items.length}>
             {items.map((it, i) => (
-              <div className="sl-step" key={i}>
+              <div className="sl-step sl-in" style={at(i)} key={i}>
                 <div className="sl-step-n">{i + 1}</div>
                 <E v={it.title} on={setItem(i, "title")} className="sl-step-t" placeholder="Step" />
                 <E v={it.text} on={setItem(i, "text")} className="sl-step-p" placeholder="Detail" />
@@ -190,7 +203,7 @@ function SlideViewInner({ slide: s, theme, index, total, onChange }: {
           <E v={s.title} on={set("title")} className="sl-h sl-h2" placeholder="Title" />
           <div className="sl-vs">
             {(["left", "right"] as const).map((side) => (
-              <div className={`sl-vs-col sl-vs-${side}`} key={side}>
+              <div className={`sl-vs-col sl-vs-${side} sl-in`} style={at(side === "left" ? 0 : 2)} key={side}>
                 <E v={s[side]?.title} on={setCol(side, "title")} className="sl-vs-t" placeholder="Option" />
                 {(s[side]?.bullets ?? []).map((b, i) => (
                   <div className="sl-bullet sl-bullet-sm" key={i}><span className="sl-dot" /><E v={b} on={setCol(side, i)} /></div>
@@ -223,12 +236,12 @@ function SlideViewInner({ slide: s, theme, index, total, onChange }: {
           <E v={s.subtitle} on={set("subtitle")} className="sl-cap" placeholder="Unit or source" />
           <div className="sl-bars">
             {items.map((it, i) => (
-              <div className="sl-bar-row" key={i}>
+              <div className="sl-bar-row sl-in" style={at(i)} key={i}>
                 <E v={it.title} on={setItem(i, "title")} className="sl-bar-l" placeholder="Label" />
                 <div className="sl-bar-track">
                   <div className="sl-bar-fill" style={{ width: `${Math.max(2, ((Math.abs(num(it.value)) || 0) / max) * 100)}%`, opacity: i === 0 ? 1 : 0.55 + 0.45 * ((Math.abs(num(it.value)) || 0) / max) }} />
                 </div>
-                <E v={it.value} on={setItem(i, "value")} className="sl-bar-v" placeholder="0" />
+                <E v={it.value} on={setItem(i, "value")} className="sl-bar-v" placeholder="0" count />
               </div>
             ))}
           </div>
@@ -236,6 +249,19 @@ function SlideViewInner({ slide: s, theme, index, total, onChange }: {
       );
       break;
     }
+
+    case "hero":
+      body = (
+        <>
+          <Art kind={theme.art} seed={seed} x={900} w={380} />
+          <div className="sl-pad sl-col" style={{ justifyContent: "center", width: 900 }}>
+            <E v={items[0]?.value} on={setItem(0, "value")} className="sl-hero" placeholder="0" count />
+            <E v={s.title} on={set("title")} className="sl-hero-t" placeholder="What the number means" />
+            <E v={s.text} on={set("text")} className="sl-sub" placeholder="One supporting sentence" />
+          </div>
+        </>
+      );
+      break;
 
     default:
       body = (
@@ -251,7 +277,7 @@ function SlideViewInner({ slide: s, theme, index, total, onChange }: {
 
   const big = s.layout === "title" || s.layout === "section" || s.layout === "closing" || s.layout === "statement";
   return (
-    <div className={`sl sl-${s.layout} ${inverted ? "sl-inv" : ""}`} style={{ ["--h" as string]: `${h(big ? 92 : 54).fontSize}px`, ["--q" as string]: `${size(s.text, [[60, 60], [110, 50], [170, 42]], 36)}px` }}>
+    <div ref={root} className={`sl ly-${s.layout} ${inverted ? "sl-inv" : ""} ${play ? "sl-play" : ""}`} style={{ ["--t0" as string]: `${lead}ms`, ["--h" as string]: `${h(big ? 92 : 54).fontSize}px`, ["--q" as string]: `${size(s.text, [[60, 60], [110, 50], [170, 42]], 36)}px` }}>
       {body}
       <div className="sl-foot">{index + 1} / {total}</div>
     </div>

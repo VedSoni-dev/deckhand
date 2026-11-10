@@ -43,6 +43,7 @@ const SCHEMA = `Each line is one slide, one of these shapes (choose the layout t
 {"layout":"quote","text":"a quote or a single striking line, max 30 words","by":"attribution or empty"}
 {"layout":"statement","title":"one bold sentence, max 14 words","text":"one supporting sentence, max 26 words"}
 {"layout":"chart","title":"","subtitle":"unit or source, short","items":[{"title":"label","value":"number only"}]}   (3 to 6 bars: only real, comparable numbers)
+{"layout":"hero","value":"one number, like 3x or 40% or $2M","title":"what the number means, max 10 words","text":"one supporting sentence"}   (a single number that carries the slide: only a real number)
 {"layout":"closing","title":"","subtitle":"the ask or the takeaway"}
 Every slide may also carry "notes": one or two sentences of speaker notes.`;
 
@@ -50,7 +51,7 @@ const RULES = `Rules:
 - Output NDJSON only: one compact JSON object per line. No markdown, no code fences, no text before or after.
 - Vary layouts. Never use the same layout on two slides in a row, and use "bullets" for at most a third of the deck.
 - Slide 1 uses "title". The last slide uses "closing".
-- Never invent statistics, dates or quotes. Use "stats" and "chart" only for numbers given by the user or numbers you are certain of; otherwise pick a qualitative layout. Use "quote" with an empty "by" for an unattributed line.
+- Never invent statistics, dates or quotes. Use "stats", "chart" and "hero" only for numbers given by the user or numbers you are certain of; otherwise pick a qualitative layout. Use "quote" with an empty "by" for an unattributed line.
 - Slides are read from the back of a room: short, concrete, no filler, no emoji, no markdown inside strings.
 - Write in the language of the outline.`;
 
