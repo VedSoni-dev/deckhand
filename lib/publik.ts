@@ -8,7 +8,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
 export const APP_SLUG = process.env.PUBLIK_APP_SLUG?.trim() || "deckhand";
-export const APP_VERSION = "0.1.0";
+export const APP_VERSION = "0.1.1";
 export const DEFAULT_BASE_URL = "https://publikhq.com/api/v1";
 export const BASE_URL = process.env.PUBLIK_API_BASE_URL?.trim() || DEFAULT_BASE_URL;
 /** Ask for a tier, never a vendor model name. */
