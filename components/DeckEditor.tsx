@@ -83,7 +83,7 @@ export function DeckEditor({ deck, onChange, onBack, generating, progress, onSto
   });
 
   const share = async () => {
-    const url = `${location.origin}/#s=${await encodeDeck(deck)}`;
+    const url = `${location.origin}/app#s=${await encodeDeck(deck)}`;
     try { await navigator.clipboard.writeText(url); setToast("Link copied. The whole deck lives in the link; nothing was uploaded."); }
     catch { prompt("Copy this link", url); }
   };
