@@ -257,3 +257,14 @@ input:focus-visible, textarea:focus-visible { outline: none; }
   .print-only .sl { break-after: page; break-inside: avoid; }
   * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
 }
+
+/* ---------- landing page (app/page.tsx): the publik message, PublikPitch from components/PublikGate.tsx ---------- */
+.landing-pitch { font-size: 15px; line-height: 1.6; }
+.landing-pitch p { margin: 0 0 1rem; text-wrap: pretty; }
+.landing-pitch p a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+.landing-pitch .pk-pitch-cta {
+  display: inline-flex; align-items: center; height: 2.5rem; padding: 0 1rem; border-radius: 0.6rem;
+  border: 1px solid var(--line); background: var(--bg); color: var(--fg); font-size: 0.875rem; font-weight: 600;
+  text-decoration: none; transition: border-color 0.12s;
+}
+.landing-pitch .pk-pitch-cta:hover { border-color: color-mix(in srgb, var(--fg) 30%, var(--line)); }
