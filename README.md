@@ -25,7 +25,7 @@
 
 ## What you get
 
-- **No credits, no watermark, no sign-up.** Decks are saved in your browser.
+- **No credits, no watermark.** Decks are saved in your browser.
 - **Real PowerPoint export.** Titles, bullets, cards and charts are native, editable objects, not pictures of slides.
 - **Thirteen layouts, eight themes.** Stats, timelines, comparisons, charts, quotes, big numbers. Restyle the whole deck in one click.
 - **It moves.** Slides build in with staggered motion, numbers count up, bars grow, and you pick the transition between slides.
@@ -33,6 +33,12 @@
 - **Edit anything.** Click any text to change it, switch a slide's layout, or ask the AI to rewrite one slide.
 - **Share by link.** The whole deck is packed into the URL; nothing is uploaded.
 - **Bring any model.** publik API (no key to paste), your own OpenAI or Anthropic key, or any OpenAI-compatible endpoint such as OpenRouter or Ollama.
+
+## Sign in with publik, and what is counted
+
+Deckhand opens with **Sign in with publik**: before the first screen you sign in with a publik account, then choose how to pay for AI, your publik plan or your own OpenAI or Anthropic key. You can change that choice any time in Settings.
+
+To count usage, Deckhand sends publik two events and nothing else: `app_opened` once per browser session, and `active_session` every 30 minutes while a tab is open. Each carries the app's name and version, your operating system and a random ID for this browser. No prompts, decks or other content. If your browser sends Do Not Track or Global Privacy Control, nothing is counted.
 
 ## Compared with Gamma
 
@@ -42,7 +48,7 @@ Gamma is the polished, paid option and does more. Deckhand is for people who wan
 |---|---|---|
 | Price of the app | Free, MIT licensed | Free plan; Plus $12/mo ($9/mo billed yearly); Pro $25/mo ($18/mo yearly); Ultra $100/mo ($90/mo yearly) |
 | What the AI costs | Pay per use from a publik balance (starts at $0.00; linking a publik account adds $0.05 once), or your own OpenAI or Anthropic key billed by them | 400 credits at signup on Free; 1,500 to 20,000 monthly credits on paid plans |
-| Account needed | No | Yes |
+| Account needed | A publik account (Sign in with publik) | Yes |
 | Gamma or Deckhand branding | None | Removing Gamma branding is listed as a Plus feature |
 | PowerPoint export | Yes, native editable text, shapes and charts | Yes, on every plan |
 | Other exports | PDF, one-file animated HTML, JSON, share link | PDF, PNG, Google Slides |
@@ -59,9 +65,9 @@ npm install
 npm run dev
 ```
 
-Open http://localhost:3000, click **Set up AI**, and paste an OpenAI or Anthropic API key. Own keys stay in your browser and go straight to the provider; they never touch the server.
+Open http://localhost:3000 and sign in with publik. Pick **Connect your plan**, or **Use my own key** and paste an OpenAI or Anthropic API key in Settings. Own keys stay in your browser and go straight to the provider; they never touch the server.
 
-To offer publik API to your visitors, copy `.env.example` to `.env.local` and set `PUBLIK_APP_TOKEN`.
+The publik app token is committed (`publik-app-token.txt`; it is public by design). On a public deployment, also set `PUBLIK_COOKIE_SECRET` (for example `openssl rand -base64 32`): it seals each browser's publik key into its cookie.
 
 ```bash
 npm run build && npm start            # production

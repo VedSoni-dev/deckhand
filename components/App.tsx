@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { LLMError, publikStatus, streamChat, type PublikState } from "@/lib/llm";
+import { LLMError, activeSettings, streamChat } from "@/lib/llm";
 import { LineParser, normalizeSlide } from "@/lib/parse";
 import { STYLES, addSlidePrompt, outlinePrompt, rewritePrompt, slidesPrompt, type Style } from "@/lib/prompts";
 import { SAMPLE } from "@/lib/sample";
@@ -10,6 +10,7 @@ import { DEFAULT_SETTINGS, deleteDeck, loadDecks, loadSettings, saveDeck, saveSe
 import { themeById } from "@/lib/themes";
 import { uid, type Deck, type OutlineItem, type Settings, type Slide } from "@/lib/types";
 import { DeckEditor } from "./DeckEditor";
+import { usePublik } from "./PublikGate";
 import { SettingsDialog } from "./Settings";
 import { SlideView } from "./SlideView";
 import { ErrorBanner, Logo, Scaled, ThemeSwatches } from "./ui";
@@ -29,7 +30,6 @@ export default function App() {
   const [view, setView] = useState<View>("home");
   const [ready, setReady] = useState(false);
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
-  const [publik, setPublik] = useState<PublikState | null>(null);
   const [showSettings, setShowSettings] = useState(false);
   const [decks, setDecks] = useState<Deck[]>([]);
   const [deck, setDeck] = useState<Deck | null>(null);
@@ -46,11 +46,14 @@ export default function App() {
   const deckRef = useRef<Deck | null>(null);
   deckRef.current = deck;
 
-  // ---- boot: settings, saved decks, publik state, and a deck in the link if there is one
+  // The choice made at Sign in with publik (PublikGate), changed later in Settings: publik API or the person's own key.
+  const viaPublik = usePublik().choice === "publik";
+  const active = activeSettings(settings, viaPublik);
+
+  // ---- boot: settings, saved decks, and a deck in the link if there is one
   useEffect(() => {
     setSettings(loadSettings());
     setDecks(loadDecks());
-    publikStatus().then(setPublik).catch(() => setPublik({ available: false, connected: false, disclosure: "" }));
     const open = async () => {
       const h = location.hash;
       if (h.startsWith("#s=")) {
@@ -72,7 +75,6 @@ export default function App() {
   }, []);
 
   const updateSettings = (s: Settings) => { setSettings(s); saveSettings(s); };
-  const refreshPublik = useCallback(() => { publikStatus().then(setPublik).catch(() => {}); }, []);
 
   const persist = useCallback((d: Deck) => {
     setDeck(d);
@@ -87,8 +89,8 @@ export default function App() {
 
   /** Is the chosen provider usable? If not, open settings and say why. */
   const providerReady = (): boolean => {
-    const s = settings;
-    const ok = s.provider === "openai" ? !!s.openaiKey : s.provider === "anthropic" ? !!s.anthropicKey : !!publik?.connected;
+    const s = active;
+    const ok = s.provider === "publik" || (s.provider === "openai" ? !!s.openaiKey : !!s.anthropicKey);
     if (!ok) setShowSettings(true);
     return ok;
   };
@@ -97,11 +99,10 @@ export default function App() {
     const parser = new LineParser();
     abort.current = new AbortController();
     try {
-      await streamChat({ ...p, settings, signal: abort.current.signal, onDelta: (t) => parser.push(t).forEach(onLine) });
+      await streamChat({ ...p, settings: active, signal: abort.current.signal, onDelta: (t) => parser.push(t).forEach(onLine) });
       parser.flush().forEach(onLine);
     } finally {
       abort.current = null;
-      if (settings.provider === "publik") refreshPublik();
     }
   };
 
@@ -219,10 +220,10 @@ export default function App() {
 
   const providerChip = (
     <button className="btn px-2.5 text-xs" onClick={() => setShowSettings(true)} title="Where the AI comes from">
-      <span className={`size-1.5 rounded-full ${(settings.provider === "publik" ? publik?.connected : settings.provider === "openai" ? settings.openaiKey : settings.anthropicKey) ? "bg-emerald-500" : "bg-mute"}`} />
+      <span className={`size-1.5 rounded-full ${(active.provider === "publik" || (active.provider === "openai" ? settings.openaiKey : settings.anthropicKey)) ? "bg-emerald-500" : "bg-mute"}`} />
       <span className="max-w-36 truncate">
-        {settings.provider === "publik" ? (publik?.connected ? publik.balanceLine?.split(" · ")[0] || "publik API" : "Set up AI")
-          : settings.provider === "openai" ? (settings.openaiKey ? settings.openaiModel || "OpenAI" : "Add OpenAI key")
+        {active.provider === "publik" ? "publik API"
+          : active.provider === "openai" ? (settings.openaiKey ? settings.openaiModel || "OpenAI" : "Add OpenAI key")
           : settings.anthropicKey ? settings.anthropicModel || "Claude" : "Add Claude key"}
       </span>
     </button>
@@ -232,7 +233,7 @@ export default function App() {
     <ErrorBanner error={error.e} onDismiss={() => setError(null)} onSettings={() => setShowSettings(true)} onRetry={error.retry && (() => { const r = error.retry!; setError(null); r(); })} />
   );
   const dialog = showSettings && (
-    <SettingsDialog settings={settings} onChange={updateSettings} publik={publik} onPublik={setPublik} onClose={() => setShowSettings(false)} />
+    <SettingsDialog settings={settings} onChange={updateSettings} onClose={() => setShowSettings(false)} />
   );
 
   if (view === "deck" && deck) {
@@ -265,7 +266,7 @@ export default function App() {
           <section className="mx-auto max-w-3xl pt-8 text-center sm:pt-16">
             <h1 className="text-balance font-serif text-5xl leading-[1.02] tracking-tight sm:text-7xl">Type a topic.<br />Get a deck you&apos;d <em className="text-accent">actually present</em>.</h1>
             <p className="mx-auto mt-5 max-w-xl text-pretty text-[15px] leading-relaxed text-mute sm:text-base">
-              A free, open-source deck maker. No credits, no watermark, no sign-up. Exports real PowerPoint you can keep editing.
+              A free, open-source deck maker. No credits, no watermark. Exports real PowerPoint you can keep editing.
             </p>
           </section>
 

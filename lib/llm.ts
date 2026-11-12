@@ -1,4 +1,3 @@
-import { installId } from "./store";
 import type { Settings } from "./types";
 
 export class LLMError extends Error {
@@ -25,7 +24,18 @@ interface Req {
   onMeta?: (m: Meta) => void;
 }
 
-/** One streaming call, whichever provider the user picked. Own keys go straight from this browser to the provider. */
+/** The own key in use when the person picked "My own key": the tab they last chose, else the key they have. */
+export function ownProvider(s: Settings): "openai" | "anthropic" {
+  if (s.provider === "openai" || s.provider === "anthropic") return s.provider;
+  return s.anthropicKey && !s.openaiKey ? "anthropic" : "openai";
+}
+
+/** The settings a call runs with. The choice made at Sign in with publik (or in Settings) decides:
+ *  publik API, or the person's own OpenAI or Anthropic key exactly as before. */
+export const activeSettings = (s: Settings, viaPublik: boolean): Settings => ({ ...s, provider: viaPublik ? "publik" : ownProvider(s) });
+
+/** One streaming call, whichever provider the user picked. Own keys go straight from this browser to the provider;
+ *  publik API goes through this app's server (/api/publik/chat), which holds this browser's publik key. */
 export async function streamChat(req: Req): Promise<void> {
   if (typeof navigator !== "undefined" && navigator.onLine === false) {
     throw new LLMError("offline", "You're offline. Reconnect and try again.");
@@ -45,7 +55,8 @@ export async function streamChat(req: Req): Promise<void> {
 async function fail(res: Response, who: string): Promise<never> {
   const body = await res.json().catch(() => ({}));
   const msg: string = body?.error?.message ?? body?.message ?? `${who} answered ${res.status}.`;
-  if (res.status === 402) throw new LLMError("balance", msg, body?.error?.top_up_url);
+  // 402: publik's error.message plus exactly one link, its error.top_up_url.
+  if (res.status === 402) throw new LLMError("balance", msg, typeof body?.error?.top_up_url === "string" ? body.error.top_up_url : undefined);
   if (res.status === 428) throw new LLMError("consent", msg);
   if (res.status === 401 || res.status === 403) throw new LLMError("auth", `${who} rejected the key. ${msg}`);
   if (res.status === 429) throw new LLMError("rate", `${who} is rate-limiting you. Wait a moment and retry. ${msg}`);
@@ -149,35 +160,6 @@ async function publik({ system, user, settings, signal, onDelta, onMeta }: Req) 
     const t = c.choices?.[0]?.delta?.content;
     if (t) onDelta(t);
   });
-}
-
-export interface PublikState {
-  /** The server has an app token, so publik API can be offered at all. */
-  available: boolean;
-  /** This browser has a publik key (kept in an http-only cookie, never in page scripts). */
-  connected: boolean;
-  disclosure: string;
-  balanceLine?: string;
-  cost?: string | null;
-  claimUrl?: string | null;
-  addCreditUrl?: string | null;
-  claimState?: "anonymous" | "claimed";
-}
-
-export async function publikStatus(): Promise<PublikState> {
-  const res = await fetch("/api/publik/status", { cache: "no-store" });
-  return res.json();
-}
-
-export async function publikConnect(): Promise<PublikState> {
-  const res = await fetch("/api/publik/provision", {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({ install_id: installId(), accepted: true }),
-  });
-  const body = await res.json().catch(() => ({}));
-  if (!res.ok) throw new LLMError("other", body?.error?.message ?? "publik API could not set up this browser. Use your own key for now.");
-  return body;
 }
 
 /** Ask the provider which models this key can use, for the model picker. */
