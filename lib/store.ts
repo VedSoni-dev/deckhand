@@ -45,18 +45,3 @@ export function deleteDeck(id: string) {
 
 export const loadSettings = (): Settings => ({ ...DEFAULT_SETTINGS, ...read<Partial<Settings>>(SETTINGS, {}) });
 export const saveSettings = (s: Settings) => write(SETTINGS, s);
-
-/** A stable id for this browser, used as the publik install id. */
-export function installId(): string {
-  const k = "deckhand:install";
-  try {
-    let v = localStorage.getItem(k);
-    if (!v) {
-      v = crypto.randomUUID();
-      localStorage.setItem(k, v);
-    }
-    return v;
-  } catch {
-    return crypto.randomUUID();
-  }
-}

@@ -65,11 +65,12 @@ export function ErrorBanner({ error, onDismiss, onSettings, onRetry }: {
   return (
     <div role="alert" className="rise flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border border-accent/40 bg-accent/10 px-4 py-3 text-sm">
       <span className="min-w-0 flex-1 basis-60">{e.message}</span>
-      {e.kind === "balance" && e.link && (
-        <a className="btn btn-primary" href={e.link} target="_blank" rel="noreferrer">{e.link.includes("/claim/") ? "Sign in with publik" : "Add credit"}</a>
+      {/* 402 from publik API: its message plus exactly one link, error.top_up_url. */}
+      {e.kind === "balance" && e.link?.startsWith("https://") && (
+        <a className="btn btn-primary" href={e.link} target="_blank" rel="noopener noreferrer">Top up on publik</a>
       )}
-      {(e.kind === "balance" || e.kind === "auth" || e.kind === "no_key" || e.kind === "consent") && (
-        <button className="btn" onClick={onSettings}>{e.kind === "balance" ? "Use my own key" : "Open settings"}</button>
+      {(e.kind === "auth" || e.kind === "no_key" || e.kind === "consent") && (
+        <button className="btn" onClick={onSettings}>Open settings</button>
       )}
       {onRetry && e.kind !== "no_key" && e.kind !== "consent" && <button className="btn" onClick={onRetry}>Try again</button>}
       <button className="btn btn-ghost" onClick={onDismiss} aria-label="Dismiss">✕</button>
