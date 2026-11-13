@@ -198,11 +198,11 @@ export function PublikGate({ appName, children }: { appName?: string; children: 
               return href ? (
                 <a key={b.action} href={href} target="_blank" rel="noopener noreferrer" className={cls}
                   onClick={() => void act(b.action)} onAuxClick={(e) => { if (e.button === 1) void act(b.action); }}>
-                  {b.label}
+                  {b.action === "sign_in" ? <SignInLabel /> : b.label}
                 </a>
               ) : (
                 <button key={b.action} type="button" className={cls} disabled={busy} onClick={() => void act(b.action)}>
-                  {b.label}
+                  {b.action === "sign_in" ? <SignInLabel /> : b.label}
                 </button>
               );
             })}
@@ -213,6 +213,12 @@ export function PublikGate({ appName, children }: { appName?: string; children: 
       </div>
     </main>
   );
+}
+
+/** Said next to every Sign in with publik button (the kit's PUBLIK_CHEAPER says the same in every build). */
+export const PUBLIK_CHEAPER = "20x cheaper than OpenAI and Anthropic";
+function SignInLabel() {
+  return <span className="pk-btn-label">Sign in with publik <span className="pk-btn-aside">({PUBLIK_CHEAPER})</span></span>;
 }
 
 /** Why publik: shown on the gate and on the landing page. publik's mission line is their own words. */
@@ -270,6 +276,8 @@ const CSS = `
 .pk-buttons{display:flex;flex-direction:column;gap:8px;margin-top:24px}
 .pk-btn{box-sizing:border-box;display:flex;align-items:center;justify-content:center;min-height:46px;padding:10px 16px;border:1px solid transparent;border-radius:12px;font:inherit;font-size:15px;font-weight:600;text-decoration:none;cursor:pointer;transition:opacity .15s,background-color .15s}
 .pk-btn:disabled{opacity:.55;cursor:default}
+.pk-btn-label{text-align:center;line-height:1.25}
+.pk-btn-aside{font-weight:400;opacity:.72}
 .pk-btn:focus-visible,.pk-seg button:focus-visible,.pk-link:focus-visible{outline:2px solid var(--pk-accent);outline-offset:2px}
 .pk-primary{background:var(--pk-accent);color:var(--pk-accent-ink)}
 .pk-primary:hover{opacity:.9}

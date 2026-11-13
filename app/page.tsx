@@ -28,7 +28,7 @@ export default function Home() {
       </section>
       <section className="mt-20 max-w-2xl">
         <h2 className="text-2xl font-semibold tracking-tight">One sign-in for all of them</h2>
-        <p className="mt-3 text-mute">Sign in with publik once and every build can use your publik plan for AI. No keys to paste.</p>
+        <p className="mt-3 text-mute">Sign in with publik once and every build can use your publik plan for AI: 20x cheaper than OpenAI and Anthropic, and no keys to paste.</p>
         <PublikPitch appName="Vedant's builds" className="landing-pitch mt-6" />
       </section>
     </main>
