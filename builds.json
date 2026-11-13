@@ -1,3 +1,14 @@
 {
-  "builds": []
+  "builds": [
+    {
+      "slug": "dramatis",
+      "name": "Dramatis",
+      "tagline": "Make AI characters and chat with them",
+      "url": "https://dramatis.vedantsoni.com",
+      "repo": "https://github.com/VedSoni-dev/dramatis",
+      "alternativeTo": "Character.AI",
+      "status": "live",
+      "cover": "https://dramatis.vedantsoni.com/og.png"
+    }
+  ]
 }
