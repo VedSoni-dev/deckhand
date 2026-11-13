@@ -7,4 +7,4 @@
   publik's scan looks for them.
 - Builds don't live here. They're in `~/Projects/vedanttalksai/apps/<slug>` with their own repos, and share this listing's
   `publik-app-token.txt` through the studio kit (`kit/hub.json`).
-- Never read `.env*`, never print or commit `pk_`/`pbt_` keys or the Supabase service key. The `pat_` app token is public by design.
+- Never read `.env*`, never print or commit `pk_`/`pbt_` keys. Supabase is used with its publishable key only (insert-only table, keyed stats function). The `pat_` app token is public by design.

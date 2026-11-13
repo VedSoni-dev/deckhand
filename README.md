@@ -28,7 +28,7 @@ npm run dev        # http://localhost:3000, stats at /stats (open in development
 
 | Env | What |
 |---|---|
-| `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` | Where beacons are stored (run [`db/schema.sql`](db/schema.sql) once). Without them, development writes `.data/events.jsonl` and production drops beacons. |
+| `SUPABASE_URL`, `SUPABASE_KEY` | Where beacons are stored: the Supabase project's **publishable** key (run [`db/schema.sql`](db/schema.sql) once; it allows inserts only, and stats only with the hash of `HUB_STATS_KEY`). Without them, development writes `.data/events.jsonl` and production drops beacons. |
 | `HUB_STATS_KEY` | Opens `/stats` in production (`/stats?key=…` once per browser). |
 | `PUBLIK_COOKIE_SECRET` | Seals each browser's publik key cookie (see `lib/publik.ts`). |
 | `HUB_URL` | The hub's public address (default `https://deckhand-dusky.vercel.app`). |

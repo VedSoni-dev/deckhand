@@ -1,5 +1,7 @@
-// Where beacons go. Supabase when SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY are set (db/schema.sql), a local JSONL
-// file in development, nowhere otherwise (accepted and dropped, so builds never error because of the hub).
+// Where beacons go. Supabase when SUPABASE_URL + SUPABASE_KEY (the PUBLISHABLE key) are set (db/schema.sql: insert-only
+// for the public, stats only with the hash of HUB_STATS_KEY), a local JSONL file in development, nowhere otherwise
+// (accepted and dropped, so builds never error because of the hub). No Supabase secret key is used anywhere.
+import { createHash } from "node:crypto";
 import { appendFile, mkdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
 
@@ -7,7 +9,9 @@ export interface HubEvent { build: string; event: "app_opened" | "active_session
 export interface BuildStats { build: string; users: number; publik_users: number; opens: number; ai_calls: number; ai_local: number; ai_chatgpt: number; ai_claude: number; ai_publik: number; last_seen: string | null }
 
 const SB = process.env.SUPABASE_URL?.replace(/\/$/, "");
-const KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const KEY = process.env.SUPABASE_KEY;
+const headers = () => ({ apikey: KEY!, "content-type": "application/json" });
+export const statsKeyHash = () => createHash("sha256").update(process.env.HUB_STATS_KEY ?? "").digest("hex");
 const FILE = join(process.cwd(), ".data", "events.jsonl");
 export const storeKind = (): "supabase" | "file" | "none" => (SB && KEY ? "supabase" : process.env.NODE_ENV !== "production" || process.env.HUB_FILE_STORE === "1" ? "file" : "none");
 
@@ -16,7 +20,7 @@ export async function record(e: HubEvent): Promise<void> {
   if (kind === "supabase") {
     const r = await fetch(`${SB}/rest/v1/hub_events`, {
       method: "POST", cache: "no-store", signal: AbortSignal.timeout(5000),
-      headers: { apikey: KEY!, authorization: `Bearer ${KEY}`, "content-type": "application/json", prefer: "return=minimal" },
+      headers: { ...headers(), prefer: "return=minimal" },
       body: JSON.stringify(e),
     });
     if (!r.ok) throw new Error(`supabase ${r.status}`);
@@ -31,8 +35,8 @@ export async function stats(days: number): Promise<BuildStats[]> {
   const kind = storeKind();
   if (kind === "supabase") {
     const r = await fetch(`${SB}/rest/v1/rpc/hub_stats`, {
-      method: "POST", cache: "no-store", headers: { apikey: KEY!, authorization: `Bearer ${KEY}`, "content-type": "application/json" },
-      body: JSON.stringify({ since }),
+      method: "POST", cache: "no-store", headers: headers(),
+      body: JSON.stringify({ since, key_sha256: statsKeyHash() }),
     });
     if (!r.ok) throw new Error(`supabase ${r.status}`);
     return ((await r.json()) as BuildStats[]).map((s) => ({ ...s, users: Number(s.users), publik_users: Number(s.publik_users), opens: Number(s.opens), ai_calls: Number(s.ai_calls), ai_local: Number(s.ai_local), ai_chatgpt: Number(s.ai_chatgpt), ai_claude: Number(s.ai_claude), ai_publik: Number(s.ai_publik) }));
