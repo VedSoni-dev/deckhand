@@ -9,7 +9,7 @@ const title = "Vedant's builds: free, open-source apps";
 const description = "Every app from @vedanttalksai in one place. Free and open source, each at its own address, one publik sign-in for all of them.";
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.HUB_URL ?? "https://builds.vedantsoni.com"),
+  metadataBase: new URL(process.env.HUB_URL ?? "https://deckhand-dusky.vercel.app"),
   title,
   description,
   openGraph: { type: "website", siteName: "Vedant's builds", url: "/", title, description },
