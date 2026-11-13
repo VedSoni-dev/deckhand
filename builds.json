@@ -1,6 +1,15 @@
 {
   "builds": [
     {
+      "slug": "frontend",
+      "name": "fork this frontend",
+      "tagline": "Free, open-source front-end pieces you can use here and copy into your own site",
+      "url": "https://frontend.vedantsoni.com",
+      "repo": "https://github.com/VedSoni-dev/frontend",
+      "status": "live",
+      "cover": "https://frontend.vedantsoni.com/og.png"
+    },
+    {
       "slug": "dramatis",
       "name": "Dramatis",
       "tagline": "Make AI characters and chat with them",
