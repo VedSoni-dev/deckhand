@@ -21,9 +21,9 @@ import { platform } from "node:os";
 import type { cookies } from "next/headers";
 
 export const APP_SLUG = "deckhand";
-export const APP_VERSION = "0.1.4";
+export const APP_VERSION = "0.2.0";
 /** false: the app calls no model. It still signs in and counts users; it skips the plan screen. */
-export const USES_AI = true;
+export const USES_AI = false;
 const ORIGIN = process.env.PUBLIK_ORIGIN || "https://publikhq.com"; // PUBLIK_ORIGIN: tests only
 export const DEFAULT_BASE_URL = `${ORIGIN}/api/v1`;
 /** Ask for a tier, never a vendor model name. */

@@ -1,47 +1,55 @@
-import type { Deck, Settings } from "./types";
+// Where beacons go. Supabase when SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY are set (db/schema.sql), a local JSONL
+// file in development, nowhere otherwise (accepted and dropped, so builds never error because of the hub).
+import { appendFile, mkdir, readFile } from "node:fs/promises";
+import { join } from "node:path";
 
-const DECKS = "deckhand:decks:v1";
-const SETTINGS = "deckhand:settings:v1";
+export interface HubEvent { build: string; event: "app_opened" | "active_session" | "ai_call"; mode: string | null; install: string; publik: boolean; app_version: string | null }
+export interface BuildStats { build: string; users: number; publik_users: number; opens: number; ai_calls: number; ai_local: number; ai_chatgpt: number; ai_claude: number; ai_publik: number; last_seen: string | null }
 
-export const DEFAULT_SETTINGS: Settings = {
-  provider: "publik",
-  openaiKey: "",
-  openaiModel: "",
-  openaiBase: "https://api.openai.com/v1",
-  anthropicKey: "",
-  anthropicModel: "claude-haiku-5-5",
-  publikTier: "publik-balanced",
-};
+const SB = process.env.SUPABASE_URL?.replace(/\/$/, "");
+const KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const FILE = join(process.cwd(), ".data", "events.jsonl");
+export const storeKind = (): "supabase" | "file" | "none" => (SB && KEY ? "supabase" : process.env.NODE_ENV !== "production" || process.env.HUB_FILE_STORE === "1" ? "file" : "none");
 
-function read<T>(key: string, fallback: T): T {
-  try {
-    const raw = localStorage.getItem(key);
-    return raw ? (JSON.parse(raw) as T) : fallback;
-  } catch {
-    return fallback;
+export async function record(e: HubEvent): Promise<void> {
+  const kind = storeKind();
+  if (kind === "supabase") {
+    const r = await fetch(`${SB}/rest/v1/hub_events`, {
+      method: "POST", cache: "no-store", signal: AbortSignal.timeout(5000),
+      headers: { apikey: KEY!, authorization: `Bearer ${KEY}`, "content-type": "application/json", prefer: "return=minimal" },
+      body: JSON.stringify(e),
+    });
+    if (!r.ok) throw new Error(`supabase ${r.status}`);
+  } else if (kind === "file") {
+    await mkdir(join(process.cwd(), ".data"), { recursive: true });
+    await appendFile(FILE, `${JSON.stringify({ at: new Date().toISOString(), ...e })}\n`);
   }
 }
 
-function write(key: string, value: unknown): boolean {
-  try {
-    localStorage.setItem(key, JSON.stringify(value));
-    return true;
-  } catch {
-    return false;
+export async function stats(days: number): Promise<BuildStats[]> {
+  const since = new Date(Date.now() - days * 86_400_000).toISOString();
+  const kind = storeKind();
+  if (kind === "supabase") {
+    const r = await fetch(`${SB}/rest/v1/rpc/hub_stats`, {
+      method: "POST", cache: "no-store", headers: { apikey: KEY!, authorization: `Bearer ${KEY}`, "content-type": "application/json" },
+      body: JSON.stringify({ since }),
+    });
+    if (!r.ok) throw new Error(`supabase ${r.status}`);
+    return ((await r.json()) as BuildStats[]).map((s) => ({ ...s, users: Number(s.users), publik_users: Number(s.publik_users), opens: Number(s.opens), ai_calls: Number(s.ai_calls), ai_local: Number(s.ai_local), ai_chatgpt: Number(s.ai_chatgpt), ai_claude: Number(s.ai_claude), ai_publik: Number(s.ai_publik) }));
   }
+  if (kind === "none") return [];
+  let lines: string[] = [];
+  try { lines = (await readFile(FILE, "utf8")).split("\n").filter(Boolean); } catch { return []; }
+  const by = new Map<string, { ins: Set<string>; pub: Set<string>; s: BuildStats }>();
+  for (const l of lines) {
+    const e = JSON.parse(l) as HubEvent & { at: string };
+    if (e.at < since) continue;
+    const b = by.get(e.build) ?? { ins: new Set(), pub: new Set(), s: { build: e.build, users: 0, publik_users: 0, opens: 0, ai_calls: 0, ai_local: 0, ai_chatgpt: 0, ai_claude: 0, ai_publik: 0, last_seen: null } };
+    b.ins.add(e.install); if (e.publik) b.pub.add(e.install);
+    if (e.event === "app_opened") b.s.opens++;
+    if (e.event === "ai_call") { b.s.ai_calls++; const k = `ai_${e.mode}` as keyof BuildStats; if (k in b.s) (b.s[k] as number)++; }
+    if (!b.s.last_seen || e.at > b.s.last_seen) b.s.last_seen = e.at;
+    by.set(e.build, b);
+  }
+  return [...by.values()].map((b) => ({ ...b.s, users: b.ins.size, publik_users: b.pub.size })).sort((a, b) => b.users - a.users);
 }
-
-export const loadDecks = (): Deck[] =>
-  read<Deck[]>(DECKS, []).filter((d) => d && Array.isArray(d.slides)).sort((a, b) => b.updatedAt - a.updatedAt);
-
-export function saveDeck(deck: Deck): boolean {
-  const rest = read<Deck[]>(DECKS, []).filter((d) => d.id !== deck.id);
-  return write(DECKS, [deck, ...rest].slice(0, 60));
-}
-
-export function deleteDeck(id: string) {
-  write(DECKS, read<Deck[]>(DECKS, []).filter((d) => d.id !== id));
-}
-
-export const loadSettings = (): Settings => ({ ...DEFAULT_SETTINGS, ...read<Partial<Settings>>(SETTINGS, {}) });
-export const saveSettings = (s: Settings) => write(SETTINGS, s);

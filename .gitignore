@@ -42,3 +42,6 @@ next-env.d.ts
 
 # launch drafts stay local
 /launch
+
+# hub: local attribution store in development
+/.data/

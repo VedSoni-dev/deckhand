@@ -1,6 +1,6 @@
 {
-  "name": "deckhand",
-  "version": "0.1.4",
+  "name": "vedant-builds",
+  "version": "0.2.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -10,7 +10,6 @@
   },
   "dependencies": {
     "next": "16.4.6",
-    "pptxgenjs": "^4.0.1",
     "react": "19.3.0",
     "react-dom": "19.3.0"
   },
@@ -23,5 +22,6 @@
     "eslint-config-next": "16.4.6",
     "tailwindcss": "4.3.3",
     "typescript": "^5"
-  }
+  },
+  "description": "Vedant's builds: every free, open-source app from @vedanttalksai, with one publik sign-in."
 }
