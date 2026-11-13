@@ -49,13 +49,13 @@ export default async function Stats({ searchParams }: { searchParams: Promise<{ 
       {error && <p className="mt-6 text-red-500">Couldn&apos;t read stats: {error}</p>}
       <div className="mt-6 overflow-x-auto rounded-2xl border border-line bg-panel">
         <table className="stats w-full text-sm">
-          <thead className="text-mute"><tr><th>Build</th><th>People</th><th>publik</th><th>Opens</th><th>AI</th><th>Local</th><th>ChatGPT</th><th>Claude</th><th>publik AI</th><th>Last seen</th></tr></thead>
+          <thead className="text-mute"><tr><th>Build</th><th>People</th><th>publik</th><th>Opens</th><th>AI</th><th>Local</th><th>ChatGPT</th><th>Claude</th><th>OpenAI</th><th>publik AI</th><th>Last seen</th></tr></thead>
           <tbody>
-            {rows.length === 0 && <tr><td colSpan={10} className="text-mute">Nothing yet in this window.</td></tr>}
+            {rows.length === 0 && <tr><td colSpan={11} className="text-mute">Nothing yet in this window.</td></tr>}
             {rows.map((r) => (
               <tr key={r.build}>
                 <td>{name(r.build)}{!isKnown(r.build) && <span className="ml-2 text-xs text-mute">(not in builds.json)</span>}</td>
-                <td>{r.users}</td><td>{r.publik_users}</td><td>{r.opens}</td><td>{r.ai_calls}</td><td>{r.ai_local}</td><td>{r.ai_chatgpt}</td><td>{r.ai_claude}</td><td>{r.ai_publik}</td>
+                <td>{r.users}</td><td>{r.publik_users}</td><td>{r.opens}</td><td>{r.ai_calls}</td><td>{r.ai_local}</td><td>{r.ai_chatgpt}</td><td>{r.ai_claude}</td><td>{r.ai_openai}</td><td>{r.ai_publik}</td>
                 <td className="text-mute">{r.last_seen ? new Date(r.last_seen).toLocaleString() : "—"}</td>
               </tr>
             ))}

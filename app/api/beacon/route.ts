@@ -6,7 +6,7 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const EVENTS = new Set(["app_opened", "active_session", "ai_call"]);
-const MODES = new Set(["local", "chatgpt", "claude", "publik"]);
+const MODES = new Set(["local", "chatgpt", "claude", "openai", "publik"]);
 const UUID4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 const hits = new Map<string, { n: number; at: number }>(); // best-effort flood guard per build+install, in memory only
 

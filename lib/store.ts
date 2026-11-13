@@ -6,7 +6,7 @@ import { appendFile, mkdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
 
 export interface HubEvent { build: string; event: "app_opened" | "active_session" | "ai_call"; mode: string | null; install: string; publik: boolean; app_version: string | null }
-export interface BuildStats { build: string; users: number; publik_users: number; opens: number; ai_calls: number; ai_local: number; ai_chatgpt: number; ai_claude: number; ai_publik: number; last_seen: string | null }
+export interface BuildStats { build: string; users: number; publik_users: number; opens: number; ai_calls: number; ai_local: number; ai_chatgpt: number; ai_claude: number; ai_openai: number; ai_publik: number; last_seen: string | null }
 
 const SB = process.env.SUPABASE_URL?.replace(/\/$/, "");
 const KEY = process.env.SUPABASE_KEY;
@@ -39,7 +39,7 @@ export async function stats(days: number): Promise<BuildStats[]> {
       body: JSON.stringify({ since, key_sha256: statsKeyHash() }),
     });
     if (!r.ok) throw new Error(`supabase ${r.status}`);
-    return ((await r.json()) as BuildStats[]).map((s) => ({ ...s, users: Number(s.users), publik_users: Number(s.publik_users), opens: Number(s.opens), ai_calls: Number(s.ai_calls), ai_local: Number(s.ai_local), ai_chatgpt: Number(s.ai_chatgpt), ai_claude: Number(s.ai_claude), ai_publik: Number(s.ai_publik) }));
+    return ((await r.json()) as BuildStats[]).map((s) => ({ ...s, users: Number(s.users), publik_users: Number(s.publik_users), opens: Number(s.opens), ai_calls: Number(s.ai_calls), ai_local: Number(s.ai_local), ai_chatgpt: Number(s.ai_chatgpt), ai_claude: Number(s.ai_claude), ai_openai: Number(s.ai_openai ?? 0), ai_publik: Number(s.ai_publik) }));
   }
   if (kind === "none") return [];
   let lines: string[] = [];
@@ -48,7 +48,7 @@ export async function stats(days: number): Promise<BuildStats[]> {
   for (const l of lines) {
     const e = JSON.parse(l) as HubEvent & { at: string };
     if (e.at < since) continue;
-    const b = by.get(e.build) ?? { ins: new Set(), pub: new Set(), s: { build: e.build, users: 0, publik_users: 0, opens: 0, ai_calls: 0, ai_local: 0, ai_chatgpt: 0, ai_claude: 0, ai_publik: 0, last_seen: null } };
+    const b = by.get(e.build) ?? { ins: new Set(), pub: new Set(), s: { build: e.build, users: 0, publik_users: 0, opens: 0, ai_calls: 0, ai_local: 0, ai_chatgpt: 0, ai_claude: 0, ai_openai: 0, ai_publik: 0, last_seen: null } };
     b.ins.add(e.install); if (e.publik) b.pub.add(e.install);
     if (e.event === "app_opened") b.s.opens++;
     if (e.event === "ai_call") { b.s.ai_calls++; const k = `ai_${e.mode}` as keyof BuildStats; if (k in b.s) (b.s[k] as number)++; }

@@ -7,7 +7,7 @@ create table if not exists public.hub_events (
   at timestamptz not null default now(),
   build text not null check (build ~ '^[a-z][a-z0-9-]{1,30}$'),
   event text not null check (event in ('app_opened', 'active_session', 'ai_call')),
-  mode text check (mode in ('local', 'chatgpt', 'claude', 'publik')),
+  mode text check (mode in ('local', 'chatgpt', 'claude', 'openai', 'publik')),
   install uuid not null,
   publik boolean not null default false,
   app_version text check (char_length(app_version) <= 64)
@@ -30,9 +30,10 @@ create table if not exists hub_private.config (
 --   insert into hub_private.config (stats_key_sha256) values ('<sha256 hex>') on conflict (id) do update set stats_key_sha256 = excluded.stats_key_sha256;
 
 drop function if exists public.hub_stats(timestamptz);
-create or replace function public.hub_stats(since timestamptz, key_sha256 text)
+drop function if exists public.hub_stats(timestamptz, text);   -- its return columns change when a mode is added
+create function public.hub_stats(since timestamptz, key_sha256 text)
 returns table (build text, users bigint, publik_users bigint, opens bigint, ai_calls bigint,
-               ai_local bigint, ai_chatgpt bigint, ai_claude bigint, ai_publik bigint, last_seen timestamptz)
+               ai_local bigint, ai_chatgpt bigint, ai_claude bigint, ai_openai bigint, ai_publik bigint, last_seen timestamptz)
 language plpgsql stable security definer set search_path = '' as $$
 begin
   if not exists (select 1 from hub_private.config c where c.stats_key_sha256 = key_sha256) then
@@ -47,6 +48,7 @@ begin
            count(*) filter (where e.event = 'ai_call' and e.mode = 'local'),
            count(*) filter (where e.event = 'ai_call' and e.mode = 'chatgpt'),
            count(*) filter (where e.event = 'ai_call' and e.mode = 'claude'),
+           count(*) filter (where e.event = 'ai_call' and e.mode = 'openai'),
            count(*) filter (where e.event = 'ai_call' and e.mode = 'publik'),
            max(e.at)
     from public.hub_events e where e.at >= since
