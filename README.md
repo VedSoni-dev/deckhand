@@ -4,7 +4,7 @@
 
 **Free, open-source apps from [@vedanttalksai](https://instagram.com/vedanttalksai). One publik sign-in for all of them.**
 
-[**Open the hub →**](https://deckhand-dusky.vercel.app) &nbsp;·&nbsp; [Your apps](https://deckhand-dusky.vercel.app/app)
+[**Open the hub →**](https://builds.vedantsoni.com) &nbsp;·&nbsp; [Your apps](https://builds.vedantsoni.com/app)
 
 </div>
 
@@ -31,7 +31,7 @@ npm run dev        # http://localhost:3000, stats at /stats (open in development
 | `SUPABASE_URL`, `SUPABASE_KEY` | Where beacons are stored: the Supabase project's **publishable** key (run [`db/schema.sql`](db/schema.sql) once; it allows inserts only, and stats only with the hash of `HUB_STATS_KEY`). Without them, development writes `.data/events.jsonl` and production drops beacons. |
 | `HUB_STATS_KEY` | Opens `/stats` in production (`/stats?key=…` once per browser). |
 | `PUBLIK_COOKIE_SECRET` | Seals each browser's publik key cookie (see `lib/publik.ts`). |
-| `HUB_URL` | The hub's public address (default `https://deckhand-dusky.vercel.app`). |
+| `HUB_URL` | The hub's public address (default `https://builds.vedantsoni.com`). |
 
 `publik-app-token.txt` is this listing's public app token: it only mints capped keys and is meant to be committed.
 `PUBLIK_SELF_TEST=1 npm run start` on a built copy prints `publik self-test: ok deckhand <version>`.
