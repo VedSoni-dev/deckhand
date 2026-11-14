@@ -1,6 +1,16 @@
 {
   "builds": [
     {
+      "slug": "promptroom",
+      "name": "Promptroom",
+      "tagline": "Photoroom effects in ChatGPT, with the exact prompts",
+      "url": "https://promptroom.vedantsoni.com",
+      "repo": "https://github.com/VedSoni-dev/promptroom",
+      "alternativeTo": "Photoroom",
+      "status": "live",
+      "cover": "https://promptroom.vedantsoni.com/og.png"
+    },
+    {
       "slug": "frontend",
       "name": "fork this frontend",
       "tagline": "Free, open-source front-end pieces you can use here and copy into your own site",
