@@ -1,6 +1,16 @@
 {
   "builds": [
     {
+      "slug": "peel",
+      "name": "Peel",
+      "tagline": "Scan any grocery barcode and see how healthy it really is",
+      "url": "https://peel.vedantsoni.com",
+      "repo": "https://github.com/VedSoni-dev/peel",
+      "alternativeTo": "Yuka",
+      "status": "live",
+      "cover": "https://peel.vedantsoni.com/og.png"
+    },
+    {
       "slug": "promptroom",
       "name": "Promptroom",
       "tagline": "Photoroom effects in ChatGPT, with the exact prompts",
