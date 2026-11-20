@@ -1,6 +1,16 @@
 {
   "builds": [
     {
+      "slug": "sting",
+      "name": "Sting",
+      "tagline": "A war room for your AI agents",
+      "url": "https://sting.vedantsoni.com",
+      "repo": "https://github.com/VedSoni-dev/sting",
+      "alternativeTo": "Anduril Lattice",
+      "status": "live",
+      "cover": "https://sting.vedantsoni.com/og.png"
+    },
+    {
       "slug": "peel",
       "name": "Peel",
       "tagline": "Scan any grocery barcode and see how healthy it really is",
