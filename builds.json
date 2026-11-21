@@ -1,6 +1,16 @@
 {
   "builds": [
     {
+      "slug": "partyline",
+      "name": "Partyline",
+      "tagline": "Party games on one laptop, friends join from their phones",
+      "url": "https://partyline.vedantsoni.com",
+      "repo": "https://github.com/VedSoni-dev/partyline",
+      "alternativeTo": "Jackbox",
+      "status": "live",
+      "cover": "https://partyline.vedantsoni.com/og.png"
+    },
+    {
       "slug": "stringboard",
       "name": "Stringboard",
       "tagline": "An investigation board for your chats, emails and files",
