@@ -1,6 +1,16 @@
 {
   "builds": [
     {
+      "slug": "stringboard",
+      "name": "Stringboard",
+      "tagline": "An investigation board for your chats, emails and files",
+      "url": "https://stringboard.vedantsoni.com",
+      "repo": "https://github.com/VedSoni-dev/stringboard",
+      "alternativeTo": "Palantir Gotham",
+      "status": "live",
+      "cover": "https://stringboard.vedantsoni.com/og.png"
+    },
+    {
       "slug": "sting",
       "name": "Sting",
       "tagline": "A war room for your AI agents",
