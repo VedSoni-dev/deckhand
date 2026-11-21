@@ -1,6 +1,16 @@
 {
   "builds": [
     {
+      "slug": "detox",
+      "name": "Camera Roll Detox",
+      "tagline": "Clean your iPhone camera roll with AI in one tap, free",
+      "url": "https://detox.vedantsoni.com",
+      "repo": "https://github.com/VedSoni-dev/detox",
+      "alternativeTo": "Cleanup",
+      "status": "live",
+      "cover": "https://detox.vedantsoni.com/og.png"
+    },
+    {
       "slug": "partyline",
       "name": "Partyline",
       "tagline": "Party games on one laptop, friends join from their phones",
